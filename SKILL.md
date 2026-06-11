@@ -22,8 +22,8 @@ description: >
   start. Infer reasonable defaults from the doc, then ask targeted follow-up
   questions only for things that can't be inferred.
 
-  Output: a multi-tab .xlsx file structured exactly like the BPT eval golden
-  spreadsheet, ready to use in eval harnesses.
+  Output: a Google Sheet (primary) + .xlsx download (backup), structured exactly like
+  the BPT eval golden spreadsheet, ready to use in eval harnesses.
 ---
 
 # Health Feature Eval Goldens Generator
@@ -703,9 +703,71 @@ cell.font = Font(bold=True, color="FFFFFF", size=12)
 
 ## Output
 
-Save to: `/mnt/user-data/outputs/[FeatureName]_Eval_Goldens_v1.xlsx`
+The primary deliverable is a **Google Sheet** created via the Google Drive MCP.
+An `.xlsx` file is also saved to `/mnt/user-data/outputs/` as a downloadable backup.
 
-Call `present_files` to deliver the file.
+---
+
+### Step A — Build the .xlsx locally using openpyxl
+
+Build the full workbook with all tabs, formatting, colors, and column widths exactly
+as specified in this skill. Save to:
+`/home/claude/[FeatureName]_Eval_Goldens_v1.xlsx`
+
+---
+
+### Step B — Upload to Google Sheets via Google Drive MCP
+
+Use the `Google Drive: create_file` tool to upload the xlsx directly to Google Drive
+as a Google Sheet. This converts it automatically and preserves all tabs and data.
+
+```
+Tool: Google Drive:create_file
+  name: "[FeatureName] Eval Goldens v1"
+  mime_type: "application/vnd.google-apps.spreadsheet"
+  content: <base64-encoded xlsx bytes>
+```
+
+After creation, use `Google Drive:get_file_permissions` to get the file ID, then
+share it publicly (view-only) using `Google Drive:get_file_metadata` to retrieve
+the sharing link.
+
+**Provide the Google Sheet link to the user as:**
+> **Google Sheet:** https://docs.google.com/spreadsheets/d/[FILE_ID]
+
+**Note on formatting:** Google Sheets preserves cell values and tab structure from
+the uploaded xlsx. Background colors, fonts, and column widths transfer reliably
+when the file is created as `application/vnd.google-apps.spreadsheet`. The visual
+output matches the xlsx design.
+
+---
+
+### Step C — Copy xlsx to outputs and share
+
+```python
+import shutil
+shutil.copy(
+    "/home/claude/[FeatureName]_Eval_Goldens_v1.xlsx",
+    "/mnt/user-data/outputs/[FeatureName]_Eval_Goldens_v1.xlsx"
+)
+```
+
+Call `present_files` with the xlsx path so the user can also download it directly.
+
+**Deliver both to the user:**
+1. Google Sheet link (for viewing/collaborating)
+2. `.xlsx` download via `present_files` (for offline use)
+
+---
+
+### Fallback if Google Drive MCP is unavailable
+
+If the Google Drive MCP tool is not connected:
+1. Deliver the `.xlsx` via `present_files`
+2. Tell the user: "Google Drive is not connected — here's the xlsx. You can upload it
+   to Google Sheets at sheets.google.com → File → Import → Upload."
+
+---
 
 Version naming: `_v1`, `_v2` etc. Never overwrite a prior version.
 
