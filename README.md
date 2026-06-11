@@ -2,6 +2,7 @@
 
 Turns your product docs into a fully structured eval golden spreadsheet for any
 Fitbit / Google health or wellness feature. One prompt. One file output.
+Trigger words: health evals, golden utterances
 
 ---
 
