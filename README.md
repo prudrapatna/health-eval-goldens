@@ -186,7 +186,14 @@ methodology, and markets automatically.
 
 ## File output
 
-The skill saves to:
-`/mnt/user-data/outputs/[FeatureName]_Eval_Goldens_v1.xlsx`
+The skill produces two deliverables:
 
-Versions are never overwritten — each run increments: `_v1`, `_v2`, etc.
+**1. Google Sheet** — primary output, shared as a view link:
+> https://docs.google.com/spreadsheets/d/[FILE_ID]
+
+**2. .xlsx download** — backup file for offline use, delivered via download link.
+
+The Google Sheet is created by uploading the xlsx to Google Drive via the Google Drive
+MCP connector. All tabs, colors, column structure, and data transfer automatically.
+
+Version naming: `_v1`, `_v2` etc. — prior versions are never overwritten.
